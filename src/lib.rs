@@ -22,7 +22,7 @@
 macro_rules! plus_1 {
     ($t:tt) => { 1 };
     ($a:tt $($bs:tt)+) => {{
-        1 + plus_1!($($bs)+)
+        1 + $crate::plus_1!($($bs)+)
     }
     };
 }
