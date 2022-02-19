@@ -1,4 +1,4 @@
-# Strenum
+# Stringy
 A tiny Rust crate for generating byte-sized enums that represent a fixed,
 ordered set of `&str` data.
 
