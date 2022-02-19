@@ -7,6 +7,7 @@ readme = "README.md"
 repository = "https://github.com/lctr/strenum"
 license = "MIT"
 keywords = ["strings", "lexemes"]
+description = "A tiny Rust crate for generating byte-sized enums that represent a fixed, ordered set of &str data."
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
