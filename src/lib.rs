@@ -18,7 +18,7 @@
 /// ```
 /// *Note* that the actual tokens provided are discarded, as each invocation of
 /// this macro is syntactically equivalent to a repeated addition of `1`.
-#[allow(unused)]
+#[macro_export]
 macro_rules! plus_1 {
     ($t:tt) => { 1 };
     ($a:tt $($bs:tt)+) => {{
@@ -159,7 +159,7 @@ macro_rules! stringy {
                 }).as_bytes()
             }
 
-            pub fn array() -> [$name; plus_1!($($label)+)] {
+            pub fn array() -> [$name; $crate::plus_1!($($label)+)] {
                 [$($name::$label,)+]
             }
 
