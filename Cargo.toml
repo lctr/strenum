@@ -2,6 +2,11 @@
 name = "strenum"
 version = "0.1.0"
 edition = "2018"
+authors = ["Lictor Guzman <lctrgzmn@gmail.com>"]
+readme = "README.md"
+repository = "https://github.com/lctr/strenum"
+license = "MIT"
+keywords = ["strings", "lexemes"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
