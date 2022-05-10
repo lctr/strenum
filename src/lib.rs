@@ -281,7 +281,10 @@ mod tests {
     #[test]
     fn it_works() {
         stringy! {
-            Color = Red "red" Blue "blue" Green "green"
+            Color =
+                Red "red" | "rojo"
+                Blue "blue" | "azul"
+                Green "green" | "verde"
         }
 
         assert_eq!(mem::size_of::<Color>(), 1);
@@ -289,6 +292,7 @@ mod tests {
         assert_eq!(mem::size_of_val(&Color::VARIANTS), 3);
         assert_eq!(mem::size_of_val(&Color::Red.as_str()), 16);
         assert_eq!(Color::from_str("red"), Some(Color::Red));
+        assert_eq!(Color::from_str("rojo"), Color::from_str("red"));
     }
 
     #[test]
