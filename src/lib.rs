@@ -60,7 +60,7 @@ macro_rules! stringy {
         =
         $(
             $($(#[$com:meta])+)?
-            $label:ident $lit:literal
+            $label:ident $lit:literal $(| $alt:literal)*
         )+
     ) => {
         $(
@@ -121,13 +121,13 @@ macro_rules! stringy {
             #[inline]
             pub fn from_str(s: &str) -> Option<Self> {
                 match s {
-                    $($lit => {Some($name::$label)})+
+                    $($lit $(| $alt)* => {Some($name::$label)})+
                     _ => None
                 }
             }
 
             /// Returns the literal string provided with a given variant from
-            /// where it was defined.
+            /// where it was defined. Alternates are *not* reachable this way.
             #[inline]
             pub fn as_str(&self) -> &str {
                 match self {
@@ -317,7 +317,7 @@ mod tests {
             /// This is a doc comment about `Digit`
             Digit =
             /// Doc comment for `Digit::One`
-            One "1"
+            One "1" | "one"
             Two "2"
             Three "3"
             Four "4"
@@ -329,11 +329,13 @@ mod tests {
             Nine "9"
         }
 
+        assert_eq!(Digit::from_str("one"), Some(Digit::One));
+
         let evens = Digit::VARIANTS
             .iter()
             .map(|d| d.parse::<usize>().unwrap())
             .filter(|n| n % 2 == 0)
-            .collect::<Vec<_>>();
+            .collect::<Vec<usize>>();
 
         assert_eq!(evens, vec![2, 4, 6, 8])
     }
