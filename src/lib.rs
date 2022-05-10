@@ -121,7 +121,7 @@ macro_rules! stringy {
             #[inline]
             pub fn from_str(s: &str) -> Option<Self> {
                 match s {
-                    $($lit $(| $alt)* => {Some($name::$label)})+
+                    $($lit $(| $alt)* => { Some($name::$label) })+
                     _ => None
                 }
             }
@@ -238,7 +238,7 @@ macro_rules! stringy {
 
             fn try_from(value: &'t str) -> Result<Self, Self::Error> {
                 match value {
-                    $($lit => { Ok($name::$label) })+
+                    $($lit $(| $alt)* => { Ok($name::$label) })+
                     _ => { Err(value) }
                 }
             }
@@ -252,7 +252,7 @@ macro_rules! stringy {
 
             fn try_from(value: String) -> Result<Self, Self::Error> {
                 match value.as_str() {
-                    $($lit => { Ok($name::$label) })+
+                    $($lit $(| $alt)* => { Ok($name::$label) })+
                     _ => { Err(value) }
                 }
             }
