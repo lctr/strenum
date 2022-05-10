@@ -48,7 +48,7 @@
 ///
 /// // We can also generate a fixed-size array of all of the possibiities,
 /// // ordered as defined.
-/// let rgb = Color::array();
+/// let rgb = Color::VARIANTS;
 /// assert_eq!(rgb, [Color::Red, Color::Green, Color::Blue]);
 /// ```
 ///
