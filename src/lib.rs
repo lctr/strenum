@@ -2,31 +2,6 @@
 ///! for fixed instances of lazily allocated literal data.
 ///!
 
-/// Macro to generate numbers in constant contexts, e.g., the constant usize
-/// bound in the type signature of a fixed size array.
-///
-/// # Example
-/// The following illustrates this macro being used to generate a usize
-/// constant `N` equal to the number of `token tree`s provided.
-///
-/// In this case, we know we want it to be three -- however, within the context
-/// of another macro, we would be able to use this to find a statically known
-/// bound for a certain syntactic repetition.
-///
-/// ```
-/// let three_bytes: [u8; plus_1!(a b c)] = [0, 1, 2];
-/// ```
-/// *Note* that the actual tokens provided are discarded, as each invocation of
-/// this macro is syntactically equivalent to a repeated addition of `1`.
-#[macro_export]
-macro_rules! plus_1 {
-    ($t:tt) => { 1 };
-    ($a:tt $($bs:tt)+) => {{
-        1 + $crate::plus_1!($($bs)+)
-    }
-    };
-}
-
 /// Generates byte-sized enums corresponding to a set of string literals.
 ///
 /// The variants are all fieldless variants, but they each can generate *one*
@@ -109,6 +84,11 @@ macro_rules! stringy {
 
         #[allow(unused)]
         impl $name {
+            /// An array containing an instance of every variant in the same
+            /// order declared. This array effectively loosely portrays the
+            /// compiler-generated implementations of `PartialOrd` etc..
+            pub const VARIANTS: [$name; $crate::stringy!(#$($label)+)] = [$($name::$label,)+];
+
             /// Given a string slice, check the literals corresponding to each
             /// of this enum's variants, returning the variant (wrapped in a
             /// `Some` variant) if a strict match is found, otherwise returning
@@ -143,6 +123,7 @@ macro_rules! stringy {
             /// With all variants enumerated based on definition order, this
             /// returns the `usize` value corresponding to where this
             /// instance's variant lies along the sequence of variants.
+            // TODO: this needs a better name
             #[inline]
             pub fn as_usize(&self) -> usize {
                 let mut i = 0;
@@ -157,10 +138,6 @@ macro_rules! stringy {
                 (match self {
                     $($name::$label => { $lit })+
                 }).as_bytes()
-            }
-
-            pub fn array() -> [$name; $crate::plus_1!($($label)+)] {
-                [$($name::$label,)+]
             }
 
             /// Identifies whether a given instance has the same variant as any
@@ -230,6 +207,15 @@ macro_rules! stringy {
             }
         }
 
+        /// Cheaply convert a `stringy`-generated enum to a string slice.
+        impl AsRef<str> for $name {
+            fn as_ref(&self) -> &str {
+                match self {
+                    $($name::$label => { $lit })+
+                }
+            }
+        }
+
         /// Tries to convert a string slice into a variant of this enum.
         /// On failure, the provided string slice is returned.
         impl<'t> std::convert::TryFrom<&'t str> for $name {
@@ -256,29 +242,38 @@ macro_rules! stringy {
                 }
             }
         }
+    };
+
+    // internal rule/hack to satisfy integer portion for constant expressions by
+    // exploiting the fact the compiler can accept a binary expression such as
+    // `1 + 1 + 1` in place of `3`.
+    //
+    // __NOTE:__ The above is likely to cap out based on whether a recursion
+    // limit has been set, implying that for enums with large enough variants,
+    // this macro *may* cause the compiler to complain..
+    (#$t:tt) => { 1 };
+    (#$a:tt $($bs:tt)+) => {{
+        1 $(+ $crate::stringy!(# $bs))+
     }
+    };
 }
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+    use std::mem;
+
     #[test]
     fn it_works() {
-        let _m = 0;
-        let _n = plus_1!(x y z u v w);
         stringy! {
             Color = Red "red" Blue "blue" Green "green"
         }
 
-        Color::from_str("red");
-
-        println!(
-            "|Color| = {}\n|Color::Red| = {}\n|Color::Red.as_str()| = {}\n|Color::variants()| = {}",
-            std::mem::size_of::<Color>(),
-            std::mem::size_of_val(&Color::Red),
-            std::mem::size_of_val(Color::Red.as_str()),
-            std::mem::size_of_val(&Color::array())
-        );
-        println!("Color::Red.as_str() = {:?}", Color::Red)
+        assert_eq!(mem::size_of::<Color>(), 1);
+        assert_eq!(mem::size_of_val(&Color::Red), 1);
+        assert_eq!(mem::size_of_val(&Color::VARIANTS), 3);
+        assert_eq!(mem::size_of_val(&Color::Red.as_str()), 16);
+        assert_eq!(Color::from_str("red"), Some(Color::Red));
     }
 
     #[test]
@@ -286,7 +281,7 @@ mod tests {
         stringy! {
             Color = Red "red" Green "green" Blue "blue"
         }
-        let [r, g, b] = Color::array();
+        let [r, g, b] = Color::VARIANTS;
         assert_eq!(r, Color::Red);
         assert_eq!(g, Color::Green);
         assert_eq!(b, Color::Blue);
@@ -315,7 +310,7 @@ mod tests {
             Nine "9"
         }
 
-        let evens = Digit::array()
+        let evens = Digit::VARIANTS
             .iter()
             .map(|d| d.parse::<usize>().unwrap())
             .filter(|n| n % 2 == 0)
