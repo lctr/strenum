@@ -21,20 +21,26 @@ parsers, as well as in representing bytecode operations in corresponding vms.
   variants and relevant associated methods include user-provided data as well as
   auto-generated documentation for ease of reference.
 
+## On the horizon
+- [ ] Add conditional compilation to support deriving `Serde`'s `Serialize` and
+  `Deserialize` traits
+- [ ] Specialize certain string matching operations, such as optional support
+  for matching text in a case-insensitive manner
+
 # Examples
 ```rust
 use stringy::stringy;
 
 // Let's define some names for colors
 stringy! {
-    /// An RGB color in multiple languages. This doc comment will show up
-    /// in the enum definition for `Color`.
+    /// An RGB color in multiple languages. This doc comment 
+    /// will show up in the enum definition for `Color`.
     Color =
-        /// Documentation for `Red` variant will also be included when
-        /// generating a `stringy`-generated enum.
+        /// Documentation for `Red` variant will also be 
+        /// included when generating a `stringy`-generated enum.
         Red     "red"
-        /// The variant `Green` matches either the slice `"green"`, or the
-        /// alternative `"verde"`. 
+        /// The variant `Green` matches either the slice `"green"`, 
+        /// or the alternative `"verde"`. 
         Green   "green"
         Blue    "blue"
 }
@@ -82,9 +88,11 @@ assert_eq!(Color::VARIANTS[0], Color::Red);
 // first describe associativity and precedence as an enum 
 // (named `Fixity` below), and then later associate instances 
 // of this type with our operator enum!
+// 
 // NOTE: the `stringy` macro does not have control over the
 // associated data provided. Any "testing" or "checking"-related
-// functionality must have the necessary traits derived or implemented.
+// functionality must have the necessary traits (e.g., `PartialEq`, 
+// `Debug`, etc) either derived or implemented.
 #[derive(PartialEq, Eq, Debug)]
 pub struct Fixity {
   Left(usize), 
